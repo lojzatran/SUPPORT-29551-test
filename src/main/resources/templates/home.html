@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+</head>
+<body>
+<h1>Home page</h1>
+<section>
+    <div class="text-center">
+        <h5>
+            Carts
+        </h5>
+        <div id="div-Products">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Cart ID</th>
+                    <th>Custom field</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td th:text="${cart.id}">ID</td>
+                    <td>
+                        <td th:text="${cart.custom.fields.values}">ID</td>
+                    </td>
+                </tr>
+                <tr>
+                    <td th:text="${cartWithSerializer.id}">ID</td>
+                    <td>
+                    <td th:text="${cartWithSerializer.custom.fields.values}">ID</td>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+</body>
+</html>
