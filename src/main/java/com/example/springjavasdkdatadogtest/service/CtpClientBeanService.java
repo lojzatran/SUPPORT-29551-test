@@ -1,9 +1,12 @@
 package com.example.springjavasdkdatadogtest.service;
 
+import com.commercetools.api.client.ApiInternalLoggerFactory;
+import com.commercetools.api.client.ConcurrentModificationMiddleware;
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.defaultconfig.ApiRootBuilder;
 import com.commercetools.api.json.ApiModuleOptions;
 import io.vrap.rmf.base.client.ResponseSerializer;
+import io.vrap.rmf.base.client.http.ErrorMiddleware;
 import io.vrap.rmf.base.client.oauth2.ClientCredentials;
 import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,28 +30,35 @@ public class CtpClientBeanService {
     private ClientCredentials credentials() {
         return ClientCredentials.of().withClientId(clientId).withClientSecret(clientSecret).build();
     }
-
-    @Bean
-    public ProjectApiRoot apiRoot() {
-        ApiRootBuilder builder = ApiRootBuilder.of()
-                .defaultClient(credentials());
-
-        final ProjectApiRoot build = ProjectApiRoot.fromClient(projectKey, builder.buildClient());
-        return build;
-    }
+//
+//    @Bean
+//    public ProjectApiRoot apiRoot() {
+//        ApiRootBuilder builder = ApiRootBuilder.of()
+//                .withErrorMiddleware(ErrorMiddleware.ExceptionMode.UNWRAP_COMPLETION_EXCEPTION)
+//                .defaultClient(credentials());
+//
+//        final ProjectApiRoot build = ProjectApiRoot.fromClient(projectKey, builder.buildClient());
+//        return build;
+//    }
 
     @Bean
     public ProjectApiRoot apiRootWithSerializer() {
-        ApiRootBuilder builder = ApiRootBuilder.of()
-                .defaultClient(credentials())
-                .withSerializer(ResponseSerializer.of(
-                        JsonUtils
-                                .createObjectMapper(ApiModuleOptions.of()
-                                        .withDateAttributeAsString(true)
-                                        .withDateCustomFieldAsString(true)
-                                )));
-
-        final ProjectApiRoot build = ProjectApiRoot.fromClient(projectKey, builder.buildClient());
-        return build;
+        ProjectApiRoot projectApiRoot =
+                ApiRootBuilder.of()
+                        .defaultClient(credentials())
+                        .withProjectKey(projectKey)
+                        .withSerializer(ResponseSerializer.of(
+                                JsonUtils
+                                        .createObjectMapper(ApiModuleOptions.of()
+                                                .withDateAttributeAsString(true)
+                                                .withDateCustomFieldAsString(true)
+                                        )))
+                        .addConcurrentModificationMiddleware()
+                        .addAcceptGZipMiddleware()
+                        .withMiddleware(ConcurrentModificationMiddleware.of(5))
+                        .withInternalLoggerFactory(ApiInternalLoggerFactory::get)
+                        .withErrorMiddleware(ErrorMiddleware.ExceptionMode.UNWRAP_COMPLETION_EXCEPTION)
+                        .buildProjectRoot();
+        return projectApiRoot;
     }
 }
